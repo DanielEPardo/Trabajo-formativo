@@ -32,9 +32,8 @@ This repository is part of the data structure and algorithms (#EDA) teaching fra
 
 The students edit this section to add their names, Uniandes emails, and specify which project functionality of the project they will implement.
 
-1. Student No. 1 Daniel Esteban Pardo, de.pardo@uniandes.edu.co, 202311415. Requerimiento 5
-1. Student No. 2 Andres Peralta Caro, a.peraltac@uniandes.edu.co, 202311423. Requerimiento 4
-1. Student No. 3 Natalia Andrea Lemus Clavijo, n.lemus@uniandes.edu.co, 202024977. Requerimiento 3
+1. Student No. 1 Daniel Esteban Pardo, <de.pardo@uniandes.edu.co>, 202311415.
+1. Student No. 2 Juan Camilo Pardo, <j.pardop@uniandes.edu.co>, 202110297. 
 
 [Back to top](#challenge-template)
 
