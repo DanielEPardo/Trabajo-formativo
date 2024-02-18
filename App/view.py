@@ -69,8 +69,8 @@ def load_data():
     Carga los datos
     
     """
-    sufijo = input("Ingrese el sufijo de los archivos con que va a trabajar:\n")
-    jobsSize = controller.load_data(control, sufijo)
+    prefijo = input("Ingrese el prefijo de los archivos con que va a trabajar:\n")
+    jobsSize = controller.load_data(control, prefijo)
     jobsList = controller.getFirstAndLast3Jobs(control)
 
     print("\nLoading data...\n")
