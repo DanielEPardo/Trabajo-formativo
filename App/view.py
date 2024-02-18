@@ -69,7 +69,17 @@ def load_data():
     Carga los datos
     
     """
-    pass
+    sufijo = input("Ingrese el sufijo de los archivos con que va a trabajar:\n")
+    jobsSize = controller.load_data(control, sufijo)
+    jobsList = controller.getFirstAndLast3Jobs(control)
+
+    print("\nLoading data...\n")
+    print("-------------------------------------")
+    print("Total de ofertas de trabajo publicadaas cargadas: " + str(jobsSize))
+    print("Printing the first 3 and last 3 records on file.\n")
+    print(tabulate(lt.iterator(jobsList), tablefmt="grid", headers="keys"))
+
+    print("\n\n")
 
 
 def print_data(control, id):

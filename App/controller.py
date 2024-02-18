@@ -24,7 +24,7 @@ import config as cf
 import model
 import time
 import csv
-
+csv.field_size_limit(2147483647)
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
@@ -36,18 +36,65 @@ def new_controller():
     Crea una instancia del modelo
     """
     #TODO: Llamar la función del modelo que crea las estructuras de datos
-    pass
+    control = {
+        "model": None
+    }
+    control["model"] = model.new_data_structs()
+    return control
 
 
 # Funciones para la carga de datos
 
-def load_data(control, filename):
+def load_data(control, suffix):
     """
     Carga los datos del reto
     """
     # TODO: Realizar la carga de datos
-    pass
+    catalog = control['model']
+    
+    jobsSize = loadJobs(catalog, suffix)
+    loadTypes(catalog, suffix)
+    loadLocations(catalog, suffix)
+    loadSkills(catalog, suffix)
+    
+    return jobsSize
 
+def loadJobs(catalog, suffix):
+    filename = cf.data_dir + suffix + "-jobs.csv"
+    inputfile = csv.DictReader(open(filename, encoding="utf-8"), delimiter= ";")
+    for job in inputfile:
+        model.addJobs(catalog, job)
+        
+    return model.jobsSize(catalog)
+
+
+def loadTypes(catalog, suffix):
+    filename = cf.data_dir + suffix + "-employments_types.csv"
+    inputfile = csv.DictReader(open(filename, encoding= "utf-8"), delimiter= ";")
+    for type in inputfile:
+        model.addTypes(catalog, type)
+        
+
+def loadLocations(catalog, suffix):
+    filename = cf.data_dir + suffix + "-multilocations.csv"
+    inputfile = csv.DictReader(open(filename, encoding= "utf-8"), delimiter= ";")
+    for location in inputfile:
+        model.addLocations(catalog, location)
+
+
+def loadSkills(catalog, suffix):
+    filename = cf.data_dir + suffix + "-skills.csv"
+    inputfile = csv.DictReader(open(filename, encoding= "utf-8"), delimiter= ";")
+    for skill in inputfile:
+        model.addSkills(catalog, skill)
+
+
+def getFirstAndLast3Jobs(control):
+    """
+    Retorna los primeros y los ultimos 3 results
+    """
+    catalog = control["model"]
+    return model.getFirstAndLast3Jobs(catalog)
 
 # Funciones de ordenamiento
 

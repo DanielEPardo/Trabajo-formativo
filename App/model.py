@@ -35,6 +35,8 @@ from DISClib.Algorithms.Sorting import selectionsort as se
 from DISClib.Algorithms.Sorting import mergesort as merg
 from DISClib.Algorithms.Sorting import quicksort as quk
 assert cf
+import datetime
+from datetime import datetime
 
 """
 Se define la estructura de un catálogo de videos. El catálogo tendrá
@@ -50,17 +52,56 @@ def new_data_structs():
     manera vacía para posteriormente almacenar la información.
     """
     #TODO: Inicializar las estructuras de datos
-    pass
+    data_structs = {"types": None,
+                    "jobs": None,
+                    "locations": None,
+                    "skills": None}
+    
+    data_structs["types"] = lt.newList("ARRAY_LIST")
+    data_structs["jobs"] = lt.newList("ARRAY_LIST")
+    data_structs["locations"] = lt.newList("ARRAY_LIST")
+    data_structs["skills"] = lt.newList("ARRAY_LIST")
+    
+    return data_structs
 
 
 # Funciones para agregar informacion al modelo
 
-def add_data(data_structs, data):
+def addJobs(catalog, job):
     """
     Función para agregar nuevos elementos a la lista
     """
     #TODO: Crear la función para agregar elementos a una lista
-    pass
+    job['published_at'] = datetime.strptime(job["published_at"],"%Y-%m-%dT%H:%M:%S.%fZ")
+    lt.addLast(catalog['jobs'], job)
+    return catalog
+
+
+def addTypes(catalog, type):
+    """
+    Función para agregar nuevos elementos a la lista
+    """
+    #TODO: Crear la función para agregar elementos a una lista
+    lt.addLast(catalog['types'], type)
+    return catalog
+
+
+def addLocations(catalog, location):
+    """
+    Función para agregar nuevos elementos a la lista
+    """
+    #TODO: Crear la función para agregar elementos a una lista
+    lt.addLast(catalog['locations'], location)
+    return catalog
+
+
+def addSkills(catalog, skill):
+    """
+    Función para agregar nuevos elementos a la lista
+    """
+    #TODO: Crear la función para agregar elementos a una lista
+    lt.addLast(catalog['skills'], skill)
+    return catalog
 
 
 # Funciones para creacion de datos
@@ -75,12 +116,36 @@ def new_data(id, info):
 
 # Funciones de consulta
 
-def get_data(data_structs, id):
+def getFirstAndLast3Jobs(catalog):
     """
-    Retorna un dato a partir de su ID
+    Retorna los primeros y los ultimos 3 results
     """
-    #TODO: Crear la función para obtener un dato de una lista
-    pass
+    jobsCatalog = catalog["jobs"]
+    sa.sort(jobsCatalog, sortByDateCriteria)
+
+    firstAndLast3JobsList = lt.newList("ARRAY_LIST")
+    first3 = lt.subList(jobsCatalog, 1, 3)
+    last3 = lt.subList(jobsCatalog, lt.size(jobsCatalog) - 2, 3)
+    
+    for item in lt.iterator(first3):
+        newItem = {"published_at": item["published_at"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                   "title": item["title"],
+                   "company_name": item["company_name"],
+                   "experience_level": item["experience_level"],
+                   "country_code": item["country_code"],
+                   "city": item["city"]}
+        lt.addLast(firstAndLast3JobsList, newItem)
+        
+    for item in lt.iterator(last3):
+        newItem = {"published_at": item["published_at"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                   "title": item["title"],
+                   "company_name": item["company_name"],
+                   "experience_level": item["experience_level"],
+                   "country_code": item["country_code"],
+                   "city": item["city"]}
+        lt.addLast(firstAndLast3JobsList, newItem)
+    
+    return firstAndLast3JobsList
 
 
 def data_size(data_structs):
@@ -89,6 +154,14 @@ def data_size(data_structs):
     """
     #TODO: Crear la función para obtener el tamaño de una lista
     pass
+
+
+def jobsSize(data_structs):
+    """
+    Retorna el tamaño de la lista de datos
+    """
+    #TODO: Crear la función para obtener el tamaño de una lista
+    return lt.size(data_structs["jobs"])
 
 
 def req_1(data_structs):
@@ -167,18 +240,8 @@ def compare(data_1, data_2):
 # Funciones de ordenamiento
 
 
-def sort_criteria(data_1, data_2):
-    """sortCriteria criterio de ordenamiento para las funciones de ordenamiento
-
-    Args:
-        data1 (_type_): _description_
-        data2 (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
-    #TODO: Crear función comparadora para ordenar
-    pass
+def sortByDateCriteria(data1, data2):
+    return data1["published_at"] > data2["published_at"]
 
 
 def sort(data_structs):
