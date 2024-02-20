@@ -118,7 +118,7 @@ def new_data(id, info):
 
 def getFirstAndLast3Jobs(catalog):
     """
-    Retorna los primeros y los ultimos 3 results
+    Retorna los primeros y los ultimos 3 jobs
     """
     jobsCatalog = catalog["jobs"]
     sa.sort(jobsCatalog, sortByDateCriteria)
@@ -146,6 +146,25 @@ def getFirstAndLast3Jobs(catalog):
         lt.addLast(firstAndLast3JobsList, newItem)
     
     return firstAndLast3JobsList
+
+
+def getFirstAndLast3(data):
+    """
+    Retorna los primeros y los ultimos 3 datos
+    """
+    dataCatalog = data
+
+    firstAndLast3DataList = lt.newList("ARRAY_LIST")
+    first3 = lt.subList(dataCatalog, 1, 3)
+    last3 = lt.subList(dataCatalog, lt.size(dataCatalog) - 2, 3)
+
+    for firstItem in lt.iterator(first3):
+        lt.addLast(firstAndLast3DataList, firstItem)
+
+    for lastItem in lt.iterator(last3):
+        lt.addLast(firstAndLast3DataList, lastItem)
+
+    return firstAndLast3DataList
 
 
 def data_size(data_structs):
@@ -180,20 +199,60 @@ def req_2(data_structs):
     pass
 
 
-def req_3(data_structs):
+def req_3(catalog, numberOfOffersToShow, company, city):
     """
     Función que soluciona el requerimiento 3
     """
     # TODO: Realizar el requerimiento 3
-    pass
+    jobsList = catalog['jobs']
+    
+    filteredList = lt.newList("ARRAY_LIST")
+    for offer in lt.iterator(jobsList):
+        if offer['company_name'] == company and offer['city'] == city:
+            item = {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    'country_code': offer['country_code'],
+                    'city': offer['city'],
+                    'company_name': offer['company_name'],
+                    'title': offer['title'],
+                    'experience_level': offer['experience_level'],
+                    'remote_interview': offer['remote_interview'],
+                    'workplace_type': offer['workplace_type']}
+            lt.addLast(filteredList, item)
+    
+    orderedList = sa.sort(filteredList, sortByDateCriteria)
+    totalOfertas = lt.size(orderedList)
+    
+    if totalOfertas < numberOfOffersToShow:
+        listaOfertas = orderedList
+    else:
+        listaOfertas = lt.subList(orderedList, 1, numberOfOffersToShow)
+        
+    if lt.size(listaOfertas) > 6:
+        listaOfertas = getFirstAndLast3(listaOfertas)
+    
+    return totalOfertas, listaOfertas
+                
 
 
-def req_4(data_structs):
+def req_4(catalog, country, fechaInicio, fechaFinal):
     """
     Función que soluciona el requerimiento 4
     """
     # TODO: Realizar el requerimiento 4
-    pass
+    jobsList = catalog['jobs']
+    
+    
+    filteredList = lt.newList("ARRAY_LIST")
+    for offer in lt.iterator(jobsList):
+        if offer['country_code'] == country and offer['published_at'].strftime('%Y-%m-%d') >= fechaInicio and offer['published_at'].strftime('%Y-%m-%d') <= fechaFinal:
+            item = {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    'title': offer['title'],
+                    'experience_level': offer['experience_level'],
+                    'company_name': offer['company_name'],
+                    'city': offer['city'],
+                    'workplace_type': offer['workplace_type'],
+                    'open_to_hire_ukrainians': offer['open_to_hire_ukrainians']}
+            lt.addLast(filteredList, item)
 
 
 def req_5(data_structs):

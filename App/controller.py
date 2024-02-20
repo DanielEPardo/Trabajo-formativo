@@ -132,20 +132,30 @@ def req_2(control):
     pass
 
 
-def req_3(control):
+def req_3(control, numberOfOffersToShow, company, city):
     """
     Retorna el resultado del requerimiento 3
     """
     # TODO: Modificar el requerimiento 3
-    pass
+    catalog = control["model"]
+    start = get_time()
+    totalOfertas, listaOfertas = model.req_3(catalog, numberOfOffersToShow, company, city)
+    end = get_time()
+    diff = delta_time(start, end)
+    return totalOfertas, listaOfertas, diff
 
 
-def req_4(control):
+def req_4(control, country, fechaInicio, fechaFinal):
     """
     Retorna el resultado del requerimiento 4
     """
     # TODO: Modificar el requerimiento 4
-    pass
+    catalog = control['model']
+    start = get_time()
+    totalOfertas, totalEmpresas, totalCiudades, ciudadMayor, ciudadMenor, listaOfertas = model.req_4(catalog, country, fechaInicio, fechaFinal)
+    end = get_time()
+    diff = delta_time(start, end)
+    return totalOfertas, totalEmpresas, totalCiudades, ciudadMayor, ciudadMenor, listaOfertas, diff
 
 
 def req_5(control):

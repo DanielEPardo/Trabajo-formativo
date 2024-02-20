@@ -108,14 +108,44 @@ def print_req_3():
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
-    pass
+    numberOfOffersToShow = int(input(" Número (N) de ofertas a listar (ej.: 3, 5, 10 o 20): "))
+    company = input("Nombre completo de la empresa a consultar: ")
+    city = input("Ciudad de la oferta: ")
+    
+    print("\n======= Req No. 3 Inputs =========")
+    print("Número de ofertas a listar: " + str(numberOfOffersToShow))
+    print("Nombre completo de la empresa: " + company)
+    print("Ciudad de la oferta: " + city)
+    
+    print("\n======= Req No. 3 Results =========")
+    totalOfertas, listaOfertas, diff = controller.req_3(control, numberOfOffersToShow, company, city)
+    print("Tiempor de ejecución del requerimiento: " + str(diff) + " [ms]")
+    print("El total de ofertas ofrecidas por la empresa y ciudad es: " + str(totalOfertas))
+    print(tabulate(lt.iterator(listaOfertas), tablefmt= "grid", headers= "keys"))
 
 
 def print_req_4():
     """
         Función que imprime la solución del Requerimiento 4 en consola
     """
-    pass
+    country = input("Código del país para la consulta (ej.: PL, CO, ES, etc): ")
+    fechaInicio = input ("La fecha inicial del periodo a consultar (con formato '%Y-%m-%d'): ")
+    fechaFinal = input("La fecha final del periodo a consultar (con formato '%Y-%m-%d'): ")
+    
+    print("\n======= Req No. 4 Inputs =========")
+    print("País de consulta: " + country)
+    print("Fecha inicial: " + fechaInicio)
+    print("Fecha final: " + fechaFinal)
+    
+    print("\n======= Req No. 3 Results =========")
+    totalOfertas, totalEmpresas, totalCiudades, ciudadMayor, ciudadMenor, listaOfertas, diff = controller.req_4(control, country, fechaInicio, fechaFinal)
+    print("Tiempor de ejecución del requerimiento: " + str(diff) + " [ms]")
+    print("El total de ofertas ofrecidas en el país y el periodo establecido es: " + str(totalOfertas))
+    print("El total de empresas que publicaron al menos una oferta en el país es: " + str(totalEmpresas))
+    print("Número de ciudades del país donde se publicaron ofertas: " + str(totalCiudades))
+    print("Ciudad con el mayor número de ofertas y su conteo: " + ciudadMayor)
+    print("Ciudad con el menor número de ofertas y su conteo: " + ciudadMenor)
+    print(tabulate(lt.iterator(listaOfertas), tablefmt= "grid", headers= "keys"))
 
 
 def print_req_5():
