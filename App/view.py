@@ -137,14 +137,16 @@ def print_req_4():
     print("Fecha inicial: " + fechaInicio)
     print("Fecha final: " + fechaFinal)
     
-    print("\n======= Req No. 3 Results =========")
+    print("\n======= Req No. 4 Results =========")
     totalOfertas, totalEmpresas, totalCiudades, ciudadMayor, ciudadMenor, listaOfertas, diff = controller.req_4(control, country, fechaInicio, fechaFinal)
     print("Tiempor de ejecución del requerimiento: " + str(diff) + " [ms]")
     print("El total de ofertas ofrecidas en el país y el periodo establecido es: " + str(totalOfertas))
     print("El total de empresas que publicaron al menos una oferta en el país es: " + str(totalEmpresas))
     print("Número de ciudades del país donde se publicaron ofertas: " + str(totalCiudades))
-    print("Ciudad con el mayor número de ofertas y su conteo: " + ciudadMayor)
-    print("Ciudad con el menor número de ofertas y su conteo: " + ciudadMenor)
+    print("Ciudad con el mayor número de ofertas y su conteo:")
+    print(ciudadMayor)
+    print("Ciudad con el menor número de ofertas y su conteo:")
+    print(ciudadMenor)
     print(tabulate(lt.iterator(listaOfertas), tablefmt= "grid", headers= "keys"))
 
 

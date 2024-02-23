@@ -241,19 +241,51 @@ def req_4(catalog, country, fechaInicio, fechaFinal):
     # TODO: Realizar el requerimiento 4
     jobsList = catalog['jobs']
     
-    
+    companies_list = lt.newList("ARRAY_LIST")
+    cities_list = lt.newList("ARRAY_LIST")
+    cities_dict = {}
     filteredList = lt.newList("ARRAY_LIST")
     for offer in lt.iterator(jobsList):
-        if offer['country_code'] == country and offer['published_at'].strftime('%Y-%m-%d') >= fechaInicio and offer['published_at'].strftime('%Y-%m-%d') <= fechaFinal:
+        date = offer['published_at'].strftime("%Y-%m-%d")
+        if offer['country_code'] == country and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(fechaInicio, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(fechaFinal, '%Y-%m-%d'):
             item = {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     'title': offer['title'],
                     'experience_level': offer['experience_level'],
                     'company_name': offer['company_name'],
                     'city': offer['city'],
                     'workplace_type': offer['workplace_type'],
+                    'remote_work' : 'True' if offer['workplace_type'] == "remote" else 'False', 
                     'open_to_hire_ukrainians': offer['open_to_hire_ukrainians']}
             lt.addLast(filteredList, item)
-
+            if lt.isPresent(companies_list, offer['company_name']) == 0:
+                lt.addLast(companies_list, offer['company_name'])
+            pos_city = lt.isPresent(cities_list, offer['city'])
+            if pos_city == 0:
+                lt.addLast(cities_list, offer['city'])
+                cities_dict[offer['city']] = 1
+            else:
+                cities_dict[offer['city']] += 1
+    
+    maxCity = ""
+    max = 0
+    minCity = ""
+    min = 10000000
+    for city in cities_dict:
+        if cities_dict[city] > max:
+            maxCity = city
+            max = cities_dict[city]
+        if cities_dict[city] < min:
+            minCity = city
+            min = cities_dict[city]
+    
+    totalOfertas = lt.size(filteredList)        
+    if totalOfertas > 6:
+        listaOfertas = getFirstAndLast3(filteredList)
+    else:
+        listaOfertas = filteredList
+        
+    return totalOfertas, lt.size(companies_list), lt.size(cities_list), {maxCity: max}, {minCity: min}, listaOfertas
+                
 
 def req_5(data_structs):
     """
