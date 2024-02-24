@@ -158,12 +158,18 @@ def req_4(control, country, fechaInicio, fechaFinal):
     return totalOfertas, totalEmpresas, totalCiudades, ciudadMayor, ciudadMenor, listaOfertas, diff
 
 
-def req_5(control):
+def req_5(control, city, fechaInicio, fechaFinal):
     """
     Retorna el resultado del requerimiento 5
     """
     # TODO: Modificar el requerimiento 5
-    pass
+    catalog = control["model"]
+    start = get_time()
+    totalOfertas, totalEmpresas, empresaMayor, empresaMenor, listaOfertas = model.req_5(catalog, city, fechaInicio, fechaFinal)
+    end = get_time()
+    diff = delta_time(start, end)
+    return totalOfertas, totalEmpresas, empresaMayor, empresaMenor, listaOfertas, diff
+    
 
 def req_6(control):
     """

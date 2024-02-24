@@ -233,7 +233,6 @@ def req_3(catalog, numberOfOffersToShow, company, city):
     return totalOfertas, listaOfertas
                 
 
-
 def req_4(catalog, country, fechaInicio, fechaFinal):
     """
     Función que soluciona el requerimiento 4
@@ -277,22 +276,64 @@ def req_4(catalog, country, fechaInicio, fechaFinal):
         if cities_dict[city] < min:
             minCity = city
             min = cities_dict[city]
-    
-    totalOfertas = lt.size(filteredList)        
+            
+    orderedList = sa.sort(filteredList, sortByDateAndComapnyCriteria)
+    totalOfertas = lt.size(orderedList)        
     if totalOfertas > 6:
-        listaOfertas = getFirstAndLast3(filteredList)
+        listaOfertas = getFirstAndLast3(orderedList)
     else:
-        listaOfertas = filteredList
+        listaOfertas = orderedList
         
     return totalOfertas, lt.size(companies_list), lt.size(cities_list), {maxCity: max}, {minCity: min}, listaOfertas
                 
 
-def req_5(data_structs):
+def req_5(catalog, city, fechaInicio, fechaFinal):
     """
     Función que soluciona el requerimiento 5
     """
     # TODO: Realizar el requerimiento 5
-    pass
+    jobsList = catalog['jobs']
+    
+    companies_list = lt.newList("ARRAY_LIST")
+    companies_dict = {}
+    filteredList = lt.newList("ARRAY_LIST")
+    for offer in lt.iterator(jobsList):
+        date = offer['published_at'].strftime("%Y-%m-%d")
+        if offer['city'] == city and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(fechaInicio, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(fechaFinal, '%Y-%m-%d'):
+            item = {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    'title': offer['title'],
+                    'experience_level': offer['experience_level'],
+                    'company_name': offer['company_name'],
+                    'workplace_type': offer['workplace_type'],
+                    'company_size': offer['company_size']}
+            lt.addLast(filteredList, item)
+            pos_company = lt.isPresent(companies_list, offer['company_name'])
+            if  pos_company == 0:
+                lt.addLast(companies_list, offer['company_name'])
+                companies_dict[offer['company_name']] = 1
+            else:
+                companies_dict[offer['company_name']] += 1
+    
+    maxCompany = ""
+    max = 0
+    minCompany = ""
+    min = 10000000
+    for company in companies_dict:
+        if companies_dict[company] > max:
+            maxCompany = company
+            max = companies_dict[company]
+        if companies_dict [company] < min:
+            minCompany = company
+            min = companies_dict[company]
+            
+    orderedList = sa.sort(filteredList, sortByDateAndComapnyCriteria)
+    totalOfertas = lt.size(orderedList)        
+    if totalOfertas > 6:
+        listaOfertas = getFirstAndLast3(orderedList)
+    else:
+        listaOfertas = orderedList
+        
+    return totalOfertas, lt.size(companies_list), {maxCompany: max}, {minCompany: min}, listaOfertas
 
 
 def req_6(data_structs):
@@ -333,6 +374,15 @@ def compare(data_1, data_2):
 
 def sortByDateCriteria(data1, data2):
     return data1["published_at"] > data2["published_at"]
+
+
+def sortByDateAndComapnyCriteria(data1, data2):
+    if data1["published_at"] > data2["published_at"]:
+        return True
+    elif data1["company_name"] < data2["company_name"]:
+        return True
+    else:
+        return False
 
 
 def sort(data_structs):

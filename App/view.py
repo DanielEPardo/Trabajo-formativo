@@ -154,7 +154,25 @@ def print_req_5():
     """
         Función que imprime la solución del Requerimiento 5 en consola
     """
-    pass
+    city = input("Nombre de la ciudad: ")
+    fechaInicio = input ("La fecha inicial del periodo a consultar (con formato '%Y-%m-%d'): ")
+    fechaFinal = input("La fecha final del periodo a consultar (con formato '%Y-%m-%d'): ")
+    
+    print("\n======= Req No. 5 Inputs =========")
+    print("Ciudad de consulta: " + city)
+    print("Fecha inicial: " + fechaInicio)
+    print("Fecha final: " + fechaFinal)
+    
+    print("\n======= Req No. 5 Results =========")
+    totalOfertas, totalEmpresas, empresaMayor, empresaMenor, listaOfertas, diff = controller.req_5(control, city, fechaInicio, fechaFinal)
+    print("Tiempor de ejecución del requerimiento: " + str(diff) + " [ms]")
+    print("El total de ofertas ofrecidas en la ciudad y el periodo establecido es: " + str(totalOfertas))
+    print("El total de empresas que publicaron al menos una oferta en el país es: " + str(totalEmpresas))
+    print("Empresa con el mayor número de ofertas y su conteo:")
+    print(empresaMayor)
+    print("Empresa con el menor número de ofertas y su conteo:")
+    print(empresaMenor)
+    print(tabulate(lt.iterator(listaOfertas), tablefmt= "grid", headers= "keys"))
 
 
 def print_req_6():
