@@ -183,20 +183,77 @@ def jobsSize(data_structs):
     return lt.size(data_structs["jobs"])
 
 
-def req_1(data_structs):
+def req_1(catalog, numero, pais, nivel):
     """
     Función que soluciona el requerimiento 1
     """
     # TODO: Realizar el requerimiento 1
-    pass
+    jobsList = catalog['jobs']
+    
+    listaf = lt.newList("ARRAY_LIST")
+    for offer in lt.iterator(jobsList):
+        if offer['experience_level'] == nivel and offer['country_code'] == pais:
+            item = {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    'title': offer['title'],
+                    'company_name': offer['company_name'],
+                    'experience_level': offer['experience_level'],
+                    'country_code': offer['country_code'],
+                    'city': offer['city'],
+                    'company_size': offer['company_size'],
+                    'workplace_type': offer['workplace_type'],
+                    'open_to_hire_ukrainians': offer['open_to_hire_ukrainians']}
+            lt.addLast(listaf, item)
+    
+    listao = sa.sort(listaf, sortByDateCriteria)
+    totalOfertas = lt.size(listao)
+    
+    if totalOfertas < numero:
+        listaOfertas = listao
+    else:
+        listaOfertas = lt.subList(listao, 1, numero)
+        
+    if lt.size(listaOfertas) > 6:
+        listaOfertas = getFirstAndLast3(listaOfertas)
+    
+    return totalOfertas, listaOfertas
 
-
-def req_2(data_structs):
+def req_2(catalog, nombre, fecha0, fechaf):
     """
     Función que soluciona el requerimiento 2
     """
     # TODO: Realizar el requerimiento 2
-    pass
+    jobsList = catalog['jobs']
+    contjunior = 0
+    contmid = 0
+    contsenior = 0
+    listaF = lt.newList("ARRAY_LIST")
+    for offer in lt.iterator(jobsList):
+        date = offer['published_at'].strftime("%Y-%m-%d")
+        if offer['company_name'] == nombre and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(fecha0, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(fechaf, '%Y-%m-%d'):
+            item = {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    'title': offer['title'],
+                    'experience_level': offer['experience_level'],
+                    'city': offer['city'],
+                    'country_code': offer['country_code'],
+                    'company_size': offer['company_size'],
+                    'workplace_type': offer['workplace_type'],
+                    'open_to_hire_ukrainians': offer['open_to_hire_ukrainians']}
+            lt.addLast(listaF, item)
+            if offer['experience_level'] == "junior":
+                contjunior += 1
+            if offer['experience_level'] == "mid":
+                contmid += 1
+            if offer['experience_level'] == "senior":
+                contsenior += 1
+            
+    listaO = sa.sort(listaF, sortByDateAndCountryCriteria)
+    totalOfertas = lt.size(listaO)        
+    if totalOfertas > 6:
+        listaOfertas = getFirstAndLast3(listaO)
+    else:
+        listaOfertas = listaO
+        
+    return totalOfertas, contjunior, contmid, contsenior, listaOfertas
 
 
 def req_3(catalog, numberOfOffersToShow, company, city):
@@ -380,6 +437,14 @@ def sortByDateAndComapnyCriteria(data1, data2):
     if data1["published_at"] > data2["published_at"]:
         return True
     elif data1["company_name"] < data2["company_name"]:
+        return True
+    else:
+        return False
+    
+def sortByDateAndCountryCriteria(data1, data2):
+    if data1["published_at"] > data2["published_at"]:
+        return True
+    elif data1["country_code"] < data2["country_code"]:
         return True
     else:
         return False

@@ -94,14 +94,43 @@ def print_req_1():
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    pass
+    numero = int(input(" Número (N) de ofertas a listar (ej.: 3, 5, 10 o 20): "))
+    pais = input("Código del país (ej.: PL, CO, ES, etc): ")
+    nivel = input("Nivel de experticia de las ofertas a consultar (junior, mid, o senior): ")
+    
+    print("\n======= Req No. 1 Inputs =========")
+    print("Número de ofertas a listar: " + str(numero))
+    print("Código del país: " + pais)
+    print("Nivel de experticia: " + nivel)
+    
+    print("\n======= Req No. 1 Results =========")
+    totalOfertas, listaOfertas, dif = controller.req_1(control, numero, pais, nivel)
+    print("Tiempor de ejecución del requerimiento: " + str(dif) + " [ms]")
+    print("El total de ofertas ofrecidas por la empresa y ciudad es: " + str(totalOfertas))
+    print(tabulate(lt.iterator(listaOfertas), tablefmt= "grid", headers= "keys"))
 
 
 def print_req_2():
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
-    pass
+    nombre = input("Nombre de la empresa: ")
+    fecha0 = input ("La fecha inicial del periodo a consultar (con formato '%Y-%m-%d'): ")
+    fechaf = input("La fecha final del periodo a consultar (con formato '%Y-%m-%d'): ")
+    
+    print("\n======= Req No. 4 Inputs =========")
+    print("Nombr de la empresa: " + nombre)
+    print("Fecha inicial: " + fecha0)
+    print("Fecha final: " + fechaf)
+    
+    print("\n======= Req No. 4 Results =========")
+    totalOfertas, contjunior, contmid, contsenior, listaOfertas, dif = controller.req_2(control, nombre, fecha0, fechaf)
+    print("Tiempor de ejecución del requerimiento: " + str(dif) + " [ms]")
+    print("Número total de ofertas: " + str(totalOfertas))
+    print("Número total de ofertas con experticia junior: " + str(contjunior))
+    print("Número total de ofertas con experticia mid: " + str(contmid))
+    print("Número total de ofertas con experticia senior: " + str(contsenior))
+    print(tabulate(lt.iterator(listaOfertas), tablefmt= "grid", headers= "keys"))
 
 
 def print_req_3():
