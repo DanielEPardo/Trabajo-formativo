@@ -37,6 +37,7 @@ from DISClib.Algorithms.Sorting import quicksort as quk
 assert cf
 import datetime
 from datetime import datetime
+from tabulate import tabulate
 
 """
 Se define la estructura de un catálogo de videos. El catálogo tendrá
@@ -393,14 +394,153 @@ def req_5(catalog, city, fechaInicio, fechaFinal):
     return totalOfertas, lt.size(companies_list), {maxCompany: max}, {minCompany: min}, listaOfertas
 
 
-def req_6(data_structs):
+def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, endDate):
     """
     Función que soluciona el requerimiento 6
     """
     # TODO: Realizar el requerimiento 6
-    pass
-
-
+    jobsList = catalog['jobs']
+    typesList = catalog['types']
+    
+    citiesDict = {}
+    promSalario = 0
+    filteredList = lt.newList("ARRAY_LIST")
+    if country == None:
+        promSalario = 'N/A'
+        for offer in lt.iterator(jobsList):
+            salaryInf = None
+            salarySup = None
+            date = offer['published_at'].strftime("%Y-%m-%d")
+            if offer['experience_level'] == experienceLevel and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(startDate, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(endDate, '%Y-%m-%d'):
+                for type in lt.iterator(typesList):
+                    if type['id'] == offer['id']:
+                        salaryInf = int(type['salary_from']) if type['salary_from'] != "" else 0
+                        salarySup = int(type['salary_to']) if type['salary_to'] != "" else 0
+                item = {'city': offer['city'],
+                        'company_name': offer['company_name'],
+                        'info': {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                                 'title': offer['title'], 
+                                 'country_code': offer['country_code'], 
+                                 'workplace_type': offer['workplace_type'], 
+                                 'experience_level': offer['experience_level'],
+                                 'salary_from': salaryInf,
+                                 'salary_to': salarySup}}
+                lt.addLast(filteredList, item)
+                if offer['city'] not in citiesDict:
+                    citiesDict[offer['city']] = 1
+                else:
+                    citiesDict[offer['city']] += 1
+    else:
+        cont = 0
+        acumSalario = 0
+        for offer in lt.iterator(jobsList):
+            salaryInf = None
+            salarySup = None
+            date = offer['published_at'].strftime("%Y-%m-%d")
+            if offer['country_code'] == country and offer['experience_level'] == experienceLevel and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(startDate, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(endDate, '%Y-%m-%d'):
+                for type in lt.iterator(typesList):
+                    if type['id'] == offer['id']:
+                        salaryInf = int(type['salary_from']) if type['salary_from'] != "" else 0
+                        salarySup = int(type['salary_to']) if type['salary_to'] != "" else 0
+                        if salaryInf != 0 and salarySup != 0:    
+                            acumSalario += (salaryInf + salarySup) / 2
+                            cont += 1
+                item = {'city': offer['city'],
+                        'company_name': offer['company_name'],
+                        'info': {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                                 'title': offer['title'], 
+                                 'country_code': offer['country_code'], 
+                                 'workplace_type': offer['workplace_type'], 
+                                 'experience_level': offer['experience_level'],
+                                 'salary_from': salaryInf,
+                                 'salary_to': salarySup}}
+                lt.addLast(filteredList, item)
+                if offer['city'] not in citiesDict:
+                    citiesDict[offer['city']] = 1
+                else:
+                    citiesDict[offer['city']] += 1
+        promSalario = round(acumSalario / cont, 2)
+    
+    maxCityOverall = ''
+    maxOverall = 0
+    minCityOverall = ''
+    minOverall = 10000000
+    for city in citiesDict:
+        if citiesDict[city] > maxOverall:
+            maxCityOverall = city
+            maxOverall = citiesDict[city]
+        if citiesDict[city] < minOverall:
+            minCityOverall = city
+            minOverall = citiesDict[city]
+    
+    citiesList = lt.newList("ARRAY_LIST")
+    companiesList = lt.newList("ARRAY_LIST")
+    groupedByCityList = lt.newList("ARRAY_LIST")
+    for newOffer in lt.iterator(filteredList):
+        if lt.isPresent(companiesList, newOffer['company_name']) == 0:
+            lt.addLast(companiesList, newOffer['company_name'])
+        pos_city = lt.isPresent(citiesList, newOffer['city'])
+        if pos_city == 0:
+            lt.addLast(citiesList, newOffer['city'])
+            newItem = {'city': newOffer['city'],
+                       'cant_offers': 1,
+                       'salary_acum': (newOffer['info']['salary_from'] + newOffer['info']['salary_to']) / 2,
+                       'companies': {newOffer['company_name']: 1},
+                       'best_offer': newOffer['info'],
+                       'worst_offer': newOffer['info']}
+            lt.addLast(groupedByCityList, newItem)
+        else:
+            itemToUpdate = lt.getElement(groupedByCityList, pos_city)
+            itemToUpdate['cant_offers'] += 1
+            itemToUpdate['salary_acum'] += ((newOffer['info']['salary_from'] + newOffer['info']['salary_to']) / 2)
+            dictCompanies = itemToUpdate['companies']
+            if newOffer['company_name'] in dictCompanies:
+                dictCompanies[newOffer['company_name']] += 1
+            else:
+                dictCompanies[newOffer['company_name']] = 1
+            if newOffer['info']['salary_to'] > itemToUpdate['best_offer']['salary_to']:
+                itemToUpdate['best_offer'] = newOffer['info']
+            if newOffer['info']['salary_from'] != 0 and newOffer['info']['salary_from'] < itemToUpdate['worst_offer']['salary_from']:
+                itemToUpdate['worst_offer'] = newOffer['info']
+            lt.changeInfo(groupedByCityList, pos_city, itemToUpdate)
+    
+    unorderedList = lt.newList('ARRAY_LIST')         
+    for city in lt.iterator(groupedByCityList):
+        maxCompany = ""
+        max = 0
+        for company in city['companies']:
+            if city['companies'][company] > max:
+                maxCompany = company
+                max = city['companies'][company]
+        bestOffer = lt.newList('ARRAY_LIST')
+        lt.addLast(bestOffer, city['best_offer'])
+        worstOffer = lt.newList('ARRAY_LIST')
+        lt.addLast(worstOffer, city['worst_offer'])
+        item = {'city': city['city'],
+                'cant_offers': city['cant_offers'],
+                'prom_salaries': city['salary_acum'] / city['cant_offers'],
+                'cant_empresas': len(city['companies']),
+                'max_company': {maxCompany: max},
+                'best_offer': tabulate(lt.iterator(bestOffer), tablefmt= 'grid', headers= 'keys', maxcolwidths= 5),
+                'worst_offer': tabulate(lt.iterator(worstOffer), tablefmt= 'grid', headers= 'keys', maxcolwidths= 5)}
+        lt.addLast(unorderedList, item)
+    
+    orderedList = sa.sort(unorderedList, sortByCantAndSalaryAndCityCriteria)
+    
+    if lt.size(orderedList) > numberOfOffersToShow:
+        offersList = lt.subList(orderedList, 1, numberOfOffersToShow)
+    else:
+        offersList = orderedList
+        
+    totalOfertas = lt.size(offersList)        
+    if totalOfertas > 6:
+        listaOfertas = getFirstAndLast3(orderedList)
+    else:
+        listaOfertas = orderedList
+        
+    return lt.size(citiesList), lt.size(companiesList), lt.size(filteredList), promSalario, {maxCityOverall: maxOverall}, {minCityOverall, minOverall}, listaOfertas        
+        
+        
 def req_7(data_structs):
     """
     Función que soluciona el requerimiento 7
@@ -448,6 +588,10 @@ def sortByDateAndCountryCriteria(data1, data2):
         return True
     else:
         return False
+    
+    
+def sortByCantAndSalaryAndCityCriteria(data1, data2):
+    return data1["cant_offers"] > data2["cant_offers"] 
 
 
 def sort(data_structs):

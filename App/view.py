@@ -208,8 +208,37 @@ def print_req_6():
     """
         Función que imprime la solución del Requerimiento 6 en consola
     """
-    pass
-
+    numberOfOffersToShow = int(input("El número (N) de ciudades para consulta (ej.: 3, 5, 10 o 20): "))
+    experienceLevel = input("Nivel de experticia de las ofertas de interés (junior, mid o senior): ")
+    startDate = input("La fecha inicial del periodo a consultar (con formato '%Y-%m-%d'): ")
+    endDate = input("La fecha final del periodo a consultar (con formato '%Y-%m-%d'): ")
+    ans = input("¿Desea especificar un país de consulta? (T/F): ")
+    if ans == "T":
+        country = input("Código del país para la consulta (ej.: PL, CO o ES): ")
+    else:
+        country = None
+        
+    print("\n======= Req No. 6 Inputs =========")
+    print("Número de ciudades de consulta: " + str(numberOfOffersToShow))
+    print("Nivel de experticia de las ofertas de interés: " + experienceLevel)
+    print("País de consulta: " + str(country))
+    print("Fecha inicial: " + startDate)
+    print("Fecha final: " + endDate)
+    
+    
+    print("\n======= Req No. 6 Results =========")
+    totalCiudades, totalEmpresas, totalOfertas, promSalario, ciudadMayor, ciudadMenor, listaOfertas, diff = controller.req_6(control, numberOfOffersToShow, experienceLevel, country, startDate, endDate)
+    print("Tiempor de ejecución del requerimiento: " + str(diff) + " [ms]")
+    print("Total de ciudades que cumplen con las condiciones de la consulta: " + str(totalCiudades))
+    print("Total de empresas que cumplen con las condiciones de la consulta: " + str(totalEmpresas))
+    print("Total de ofertas publicadas que cumplen con las condiciones de la consulta: " + str(totalOfertas))
+    print("Promedio del salario ofertado de todas las ofertas que cumplen con las condiciones de la consulta: " + str(promSalario))
+    print("Nombre de la ciudad con mayor cantidad de ofertas de empleos y su conteo:")
+    print(ciudadMayor)
+    print("Nombre de la ciudad con menor cantidad de ofertas de empleos y su conteo:")
+    print(ciudadMenor)
+    print(tabulate(lt.iterator(listaOfertas), tablefmt= "grid", headers= "keys"))
+    
 
 def print_req_7():
     """
