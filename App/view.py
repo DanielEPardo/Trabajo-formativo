@@ -118,12 +118,12 @@ def print_req_2():
     fecha0 = input ("La fecha inicial del periodo a consultar (con formato '%Y-%m-%d'): ")
     fechaf = input("La fecha final del periodo a consultar (con formato '%Y-%m-%d'): ")
     
-    print("\n======= Req No. 4 Inputs =========")
+    print("\n======= Req No. 2 Inputs =========")
     print("Nombr de la empresa: " + nombre)
     print("Fecha inicial: " + fecha0)
     print("Fecha final: " + fechaf)
     
-    print("\n======= Req No. 4 Results =========")
+    print("\n======= Req No. 2 Results =========")
     totalOfertas, contjunior, contmid, contsenior, listaOfertas, dif = controller.req_2(control, nombre, fecha0, fechaf)
     print("Tiempor de ejecución del requerimiento: " + str(dif) + " [ms]")
     print("Número total de ofertas: " + str(totalOfertas))

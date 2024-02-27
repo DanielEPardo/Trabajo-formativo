@@ -403,63 +403,73 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
     typesList = catalog['types']
     
     citiesDict = {}
-    promSalario = 0
     filteredList = lt.newList("ARRAY_LIST")
     if country == None:
         promSalario = 'N/A'
         for offer in lt.iterator(jobsList):
-            salaryInf = None
-            salarySup = None
             date = offer['published_at'].strftime("%Y-%m-%d")
             if offer['experience_level'] == experienceLevel and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(startDate, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(endDate, '%Y-%m-%d'):
-                for type in lt.iterator(typesList):
-                    if type['id'] == offer['id']:
-                        salaryInf = int(type['salary_from']) if type['salary_from'] != "" else 0
-                        salarySup = int(type['salary_to']) if type['salary_to'] != "" else 0
                 item = {'city': offer['city'],
                         'company_name': offer['company_name'],
+                        'id': offer['id'],
                         'info': {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                                  'title': offer['title'], 
                                  'country_code': offer['country_code'], 
                                  'workplace_type': offer['workplace_type'], 
-                                 'experience_level': offer['experience_level'],
-                                 'salary_from': salaryInf,
-                                 'salary_to': salarySup}}
+                                 'salary_from': None,
+                                 'salary_to': None}}
                 lt.addLast(filteredList, item)
                 if offer['city'] not in citiesDict:
                     citiesDict[offer['city']] = 1
                 else:
                     citiesDict[offer['city']] += 1
     else:
-        cont = 0
-        acumSalario = 0
+        promSalario = 0
         for offer in lt.iterator(jobsList):
-            salaryInf = None
-            salarySup = None
             date = offer['published_at'].strftime("%Y-%m-%d")
             if offer['country_code'] == country and offer['experience_level'] == experienceLevel and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(startDate, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(endDate, '%Y-%m-%d'):
-                for type in lt.iterator(typesList):
-                    if type['id'] == offer['id']:
-                        salaryInf = int(type['salary_from']) if type['salary_from'] != "" else 0
-                        salarySup = int(type['salary_to']) if type['salary_to'] != "" else 0
-                        if salaryInf != 0 and salarySup != 0:    
-                            acumSalario += (salaryInf + salarySup) / 2
-                            cont += 1
                 item = {'city': offer['city'],
                         'company_name': offer['company_name'],
+                        'id': offer['id'],
                         'info': {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                                  'title': offer['title'], 
                                  'country_code': offer['country_code'], 
                                  'workplace_type': offer['workplace_type'], 
-                                 'experience_level': offer['experience_level'],
-                                 'salary_from': salaryInf,
-                                 'salary_to': salarySup}}
+                                 'salary_from': None,
+                                 'salary_to': None}}
                 lt.addLast(filteredList, item)
                 if offer['city'] not in citiesDict:
                     citiesDict[offer['city']] = 1
                 else:
                     citiesDict[offer['city']] += 1
-        promSalario = round(acumSalario / cont, 2)
+                
+    orderedByIdJobsList = sa.sort(filteredList, sortByIdCriteria)
+    
+    afterTypesFilteredList = lt.newList('ARRAY_LIST')
+    if isinstance(promSalario, int):
+        acumSalario = 0
+        cont = 0
+    for type in lt.iterator(typesList):
+        job_pos = binary_search(orderedByIdJobsList, 1, lt.size(orderedByIdJobsList), type['id'])
+        if job_pos != -1:
+            job = lt.getElement(orderedByIdJobsList, job_pos)
+            salaryInf = int(type['salary_from']) if type['salary_from'] != "" else 0
+            salarySup = int(type['salary_to']) if type['salary_to'] != "" else 0
+            item = {'city': job['city'],
+                    'company_name': job['company_name'],
+                    'info': {'published_at': job['info']['published_at'],
+                             'title': job['info']['title'], 
+                             'country_code': job['info']['country_code'],
+                             'workplace_type': job['info']['workplace_type'], 
+                             'salary_from': salaryInf,
+                             'salary_to': salarySup}}
+            lt.addLast(afterTypesFilteredList, item)
+            if isinstance(promSalario, int):
+                if salaryInf != 0 and salarySup != 0:    
+                    acumSalario += (salaryInf + salarySup) / 2
+                    cont += 1
+    if isinstance(promSalario, int):
+        promSalario = round(acumSalario / cont, 2)  
     
     maxCityOverall = ''
     maxOverall = 0
@@ -476,7 +486,7 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
     citiesList = lt.newList("ARRAY_LIST")
     companiesList = lt.newList("ARRAY_LIST")
     groupedByCityList = lt.newList("ARRAY_LIST")
-    for newOffer in lt.iterator(filteredList):
+    for newOffer in lt.iterator(afterTypesFilteredList):
         if lt.isPresent(companiesList, newOffer['company_name']) == 0:
             lt.addLast(companiesList, newOffer['company_name'])
         pos_city = lt.isPresent(citiesList, newOffer['city'])
@@ -484,7 +494,7 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
             lt.addLast(citiesList, newOffer['city'])
             newItem = {'city': newOffer['city'],
                        'cant_offers': 1,
-                       'salary_acum': (newOffer['info']['salary_from'] + newOffer['info']['salary_to']) / 2,
+                       'salary_acum': ((newOffer['info']['salary_from'] + newOffer['info']['salary_to']) / 2),
                        'companies': {newOffer['company_name']: 1},
                        'best_offer': newOffer['info'],
                        'worst_offer': newOffer['info']}
@@ -498,9 +508,10 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
                 dictCompanies[newOffer['company_name']] += 1
             else:
                 dictCompanies[newOffer['company_name']] = 1
-            if newOffer['info']['salary_to'] > itemToUpdate['best_offer']['salary_to']:
+                
+            if newOffer['info']['salary_to'] != 0 and newOffer['info']['salary_to'] > itemToUpdate['best_offer']['salary_to']:
                 itemToUpdate['best_offer'] = newOffer['info']
-            if newOffer['info']['salary_from'] != 0 and newOffer['info']['salary_from'] < itemToUpdate['worst_offer']['salary_from']:
+            if newOffer['info']['salary_to'] != 0 and newOffer['info']['salary_to'] < itemToUpdate['worst_offer']['salary_to']:
                 itemToUpdate['worst_offer'] = newOffer['info']
             lt.changeInfo(groupedByCityList, pos_city, itemToUpdate)
     
@@ -521,8 +532,8 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
                 'prom_salaries': city['salary_acum'] / city['cant_offers'],
                 'cant_empresas': len(city['companies']),
                 'max_company': {maxCompany: max},
-                'best_offer': tabulate(lt.iterator(bestOffer), tablefmt= 'grid', headers= 'keys', maxcolwidths= 5),
-                'worst_offer': tabulate(lt.iterator(worstOffer), tablefmt= 'grid', headers= 'keys', maxcolwidths= 5)}
+                'best_offer': tabulate(lt.iterator(bestOffer), tablefmt= 'grid', headers= 'keys', maxcolwidths= 6),
+                'worst_offer': tabulate(lt.iterator(worstOffer), tablefmt= 'grid', headers= 'keys', maxcolwidths= 6)}
         lt.addLast(unorderedList, item)
     
     orderedList = sa.sort(unorderedList, sortByCantAndSalaryAndCityCriteria)
@@ -534,11 +545,11 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
         
     totalOfertas = lt.size(offersList)        
     if totalOfertas > 6:
-        listaOfertas = getFirstAndLast3(orderedList)
+        listaOfertas = getFirstAndLast3(offersList)
     else:
-        listaOfertas = orderedList
+        listaOfertas = offersList
         
-    return lt.size(citiesList), lt.size(companiesList), lt.size(filteredList), promSalario, {maxCityOverall: maxOverall}, {minCityOverall, minOverall}, listaOfertas        
+    return lt.size(citiesList), lt.size(companiesList), lt.size(filteredList), promSalario, {maxCityOverall: maxOverall}, {minCityOverall: minOverall}, listaOfertas        
         
         
 def req_7(data_structs):
@@ -557,6 +568,20 @@ def req_8(data_structs):
     pass
 
 
+def binary_search(list, low, high, element):
+    if high >= low:
+        mid = (high + low) // 2
+        job = lt.getElement(list, mid)
+        if job['id'] == element:
+            return mid
+        elif job['id'] < element:
+            return binary_search(list, low, mid - 1, element)
+        else:
+            return binary_search(list, mid + 1, high, element)
+    else:
+        return -1
+    
+
 # Funciones utilizadas para comparar elementos dentro de una lista
 
 def compare(data_1, data_2):
@@ -573,26 +598,42 @@ def sortByDateCriteria(data1, data2):
     return data1["published_at"] > data2["published_at"]
 
 
+def sortByIdCriteria(data1, data2):
+    return data1["id"] > data2["id"]
+
+
 def sortByDateAndComapnyCriteria(data1, data2):
     if data1["published_at"] > data2["published_at"]:
         return True
-    elif data1["company_name"] < data2["company_name"]:
-        return True
-    else:
-        return False
+    elif data1["published_at"] == data2["published_at"]:
+        if data1["company_name"] < data2["company_name"]:
+            return True
+
+    return False
+    
     
 def sortByDateAndCountryCriteria(data1, data2):
     if data1["published_at"] > data2["published_at"]:
         return True
-    elif data1["country_code"] < data2["country_code"]:
-        return True
-    else:
-        return False
+    elif data1["published_at"] == data2["published_at"]:
+        if data1["country_code"] < data2["country_code"]:
+            return True
+
+    return False
     
     
 def sortByCantAndSalaryAndCityCriteria(data1, data2):
-    return data1["cant_offers"] > data2["cant_offers"] 
-
+    if data1["cant_offers"] > data2["cant_offers"]:
+        return True
+    elif data1["cant_offers"] == data2["cant_offers"]:
+        if data1['prom_salaries'] > data2['prom_salaries']:
+            return True
+        elif data1['prom_salaries'] == data2['prom_salaries']:
+            if data1['city'] < data2['city']:
+                return True
+    
+    return False
+     
 
 def sort(data_structs):
     """
