@@ -191,6 +191,7 @@ def req_1(catalog, numero, pais, nivel):
     # TODO: Realizar el requerimiento 1
     jobsList = catalog['jobs']
     
+    # filtro por nivel de experticia y país -> O(n)
     listaf = lt.newList("ARRAY_LIST")
     for offer in lt.iterator(jobsList):
         if offer['experience_level'] == nivel and offer['country_code'] == pais:
@@ -205,9 +206,11 @@ def req_1(catalog, numero, pais, nivel):
                     'open_to_hire_ukrainians': offer['open_to_hire_ukrainians']}
             lt.addLast(listaf, item)
     
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]
     listao = sa.sort(listaf, sortByDateCriteria)
-    totalOfertas = lt.size(listao)
     
+    # Creación de la sublista a retornar O(1)
+    totalOfertas = lt.size(listao)
     if totalOfertas < numero:
         listaOfertas = listao
     else:
@@ -228,6 +231,7 @@ def req_2(catalog, nombre, fecha0, fechaf):
     contmid = 0
     contsenior = 0
     listaF = lt.newList("ARRAY_LIST")
+    # filtro por fechas y nombre de la empresa -> O(n)
     for offer in lt.iterator(jobsList):
         date = offer['published_at'].strftime("%Y-%m-%d")
         if offer['company_name'] == nombre and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(fecha0, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(fechaf, '%Y-%m-%d'):
@@ -246,8 +250,11 @@ def req_2(catalog, nombre, fecha0, fechaf):
                 contmid += 1
             if offer['experience_level'] == "senior":
                 contsenior += 1
-            
+    
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]        
     listaO = sa.sort(listaF, sortByDateAndCountryCriteria)
+    
+    # Creación de la sublista a retornar O(1)
     totalOfertas = lt.size(listaO)        
     if totalOfertas > 6:
         listaOfertas = getFirstAndLast3(listaO)
@@ -264,6 +271,7 @@ def req_3(catalog, numberOfOffersToShow, company, city):
     # TODO: Realizar el requerimiento 3
     jobsList = catalog['jobs']
     
+    # filtro por nombre de la empresa y ciudad -> O(n)
     filteredList = lt.newList("ARRAY_LIST")
     for offer in lt.iterator(jobsList):
         if offer['company_name'] == company and offer['city'] == city:
@@ -277,7 +285,10 @@ def req_3(catalog, numberOfOffersToShow, company, city):
                     'workplace_type': offer['workplace_type']}
             lt.addLast(filteredList, item)
     
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]  
     orderedList = sa.sort(filteredList, sortByDateCriteria)
+    
+    # Creación de la sublista a retornar O(1)
     totalOfertas = lt.size(orderedList)
     
     if totalOfertas < numberOfOffersToShow:
@@ -298,6 +309,7 @@ def req_4(catalog, country, fechaInicio, fechaFinal):
     # TODO: Realizar el requerimiento 4
     jobsList = catalog['jobs']
     
+    # filtro por fechas y país -> O(n)
     companies_list = lt.newList("ARRAY_LIST")
     cities_list = lt.newList("ARRAY_LIST")
     cities_dict = {}
@@ -323,6 +335,7 @@ def req_4(catalog, country, fechaInicio, fechaFinal):
             else:
                 cities_dict[offer['city']] += 1
     
+    # Determinar ciudad con más ofertas -> O(n)
     maxCity = ""
     max = 0
     minCity = ""
@@ -335,7 +348,10 @@ def req_4(catalog, country, fechaInicio, fechaFinal):
             minCity = city
             min = cities_dict[city]
             
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]          
     orderedList = sa.sort(filteredList, sortByDateAndComapnyCriteria)
+    
+    # Creación de la sublista a retornar -> O(1)
     totalOfertas = lt.size(orderedList)        
     if totalOfertas > 6:
         listaOfertas = getFirstAndLast3(orderedList)
@@ -352,6 +368,7 @@ def req_5(catalog, city, fechaInicio, fechaFinal):
     # TODO: Realizar el requerimiento 5
     jobsList = catalog['jobs']
     
+    # Filtro por fechas y ciudad -> O(n)
     companies_list = lt.newList("ARRAY_LIST")
     companies_dict = {}
     filteredList = lt.newList("ARRAY_LIST")
@@ -372,6 +389,7 @@ def req_5(catalog, city, fechaInicio, fechaFinal):
             else:
                 companies_dict[offer['company_name']] += 1
     
+    # Determinar la compañía con más ofertas -> O(n) 
     maxCompany = ""
     max = 0
     minCompany = ""
@@ -383,8 +401,11 @@ def req_5(catalog, city, fechaInicio, fechaFinal):
         if companies_dict [company] < min:
             minCompany = company
             min = companies_dict[company]
-            
+    
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]          
     orderedList = sa.sort(filteredList, sortByDateAndComapnyCriteria)
+    
+    # Creación de la sublista a retornar -> O(1) 
     totalOfertas = lt.size(orderedList)        
     if totalOfertas > 6:
         listaOfertas = getFirstAndLast3(orderedList)
@@ -402,6 +423,7 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
     jobsList = catalog['jobs']
     typesList = catalog['types']
     
+    # filtro por fechas, nivel de experiencia y país (depende del usuario) -> O(n)
     citiesDict = {}
     filteredList = lt.newList("ARRAY_LIST")
     if country == None:
@@ -442,9 +464,11 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
                     citiesDict[offer['city']] = 1
                 else:
                     citiesDict[offer['city']] += 1
-                
+                    
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]              
     orderedByIdJobsList = sa.sort(filteredList, sortByIdCriteria)
     
+    # recorrer lista de tipos + búsqueda binaria para completar los datos requeridos -> O (m log(n))
     afterTypesFilteredList = lt.newList('ARRAY_LIST')
     if isinstance(promSalario, int):
         acumSalario = 0
@@ -471,6 +495,7 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
     if isinstance(promSalario, int):
         promSalario = round(acumSalario / cont, 2)  
     
+    # Determinar ciudad con más ofertas -> O(n)
     maxCityOverall = ''
     maxOverall = 0
     minCityOverall = ''
@@ -483,6 +508,7 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
             minCityOverall = city
             minOverall = citiesDict[city]
     
+    # Recorrer la lista para obtener datos necesarios -> O(n)
     citiesList = lt.newList("ARRAY_LIST")
     companiesList = lt.newList("ARRAY_LIST")
     groupedByCityList = lt.newList("ARRAY_LIST")
@@ -515,6 +541,7 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
                 itemToUpdate['worst_offer'] = newOffer['info']
             lt.changeInfo(groupedByCityList, pos_city, itemToUpdate)
     
+    # Último recorrido de la lista para obtener los datos a retornar -> O(n)
     unorderedList = lt.newList('ARRAY_LIST')         
     for city in lt.iterator(groupedByCityList):
         maxCompany = ""
@@ -536,8 +563,10 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
                 'worst_offer': tabulate(lt.iterator(worstOffer), tablefmt= 'grid', headers= 'keys', maxcolwidths= 6)}
         lt.addLast(unorderedList, item)
     
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]  
     orderedList = sa.sort(unorderedList, sortByCantAndSalaryAndCityCriteria)
     
+    # Crear sublista a retornar -> O(1)
     if lt.size(orderedList) > numberOfOffersToShow:
         offersList = lt.subList(orderedList, 1, numberOfOffersToShow)
     else:
@@ -560,6 +589,7 @@ def req_7(catalog, numberOfOffersToShow, fechaInicio, fechaFinal):
     jobsList = catalog['jobs']
     skillsList = catalog['skills']
     
+    # filtro por fechas -> O(n)
     countriesDict = {}
     citiesDict = {}
     citiesList = lt.newList('ARRAY_LIST')
@@ -589,14 +619,16 @@ def req_7(catalog, numberOfOffersToShow, fechaInicio, fechaFinal):
                 citiesDict[offer['city']] = 1
             else:
                 citiesDict[offer['city']] += 1
-                
+    
+    # Determinar país con más ofertas -> O(n)            
     maxCountry = ''
     maxCo = 0
     for country in countriesDict:
         if countriesDict[country] > maxCo:
             maxCountry = country
             maxCo =countriesDict[country]
-            
+    
+    # Determinar ciudad con más ofertas -> O(n)        
     maxCity = ''
     maxC = 0
     for city in citiesDict:
@@ -604,8 +636,10 @@ def req_7(catalog, numberOfOffersToShow, fechaInicio, fechaFinal):
             maxCity = city
             maxC =citiesDict[city]
     
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]  
     orderedByIdJobsList = sa.sort(filteredList, sortByIdCriteria)
     
+    # Recorrido de la lista de skills + búsqueda binaria para completar la información -> O(m log(n))
     afterSkillsFilteredList = lt.newList('ARRAY_LIST')
     idList = lt.newList('ARRAY_LIST')
     for skill in lt.iterator(skillsList):
@@ -622,6 +656,7 @@ def req_7(catalog, numberOfOffersToShow, fechaInicio, fechaFinal):
             else:
                 lt.changeInfo(afterSkillsFilteredList, id_pos, job)
     
+    # Recorrer la lista para recolectar información necesaria -> O(n)
     countriesList = lt.newList('ARRAY_LIST')
     groupedByCountry = lt.newList('ARRAY_LIST')
     for newOffer in lt.iterator(afterSkillsFilteredList):
@@ -680,7 +715,8 @@ def req_7(catalog, numberOfOffersToShow, fechaInicio, fechaFinal):
                 list = dict[newOffer['company_name']]
                 lt.addLast(list, newOffer['company_name'])
             lt.changeInfo(groupedByCountry, pos_country, itemToUpdate)
-            
+    
+    #Último recorrido de la lista para obtener los datos a retornar -> O(n)        
     unorderedList = lt.newList("ARRAY_LIST")
     for country in lt.iterator(groupedByCountry):
         item = {'country_code': country['country_code'],
@@ -840,9 +876,11 @@ def req_7(catalog, numberOfOffersToShow, fechaInicio, fechaFinal):
         item['senior'] = tabulate(lt.iterator(item['senior']), tablefmt='grid', headers='keys', maxcolwidths=6)
         
         lt.addLast(unorderedList, item)
-        
+    
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]      
     orderedList = sa.sort(unorderedList, sortByCantOffers)
     
+    #Creación de la sublista a devolver -> O(1)
     if lt.size(orderedList) > numberOfOffersToShow:
         offersList = lt.subList(orderedList, 1, numberOfOffersToShow)
     else:
