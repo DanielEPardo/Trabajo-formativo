@@ -194,12 +194,17 @@ def req_6(control, numberOfOffersToShow, experienceLevel, country, startDate, en
     return totalCiudades, totalEmpresas, totalOfertas, promSalario, ciudadMayor, ciudadMenor, listaOfertas, diff
 
 
-def req_7(control):
+def req_7(control, numberOfOffersToShow, fechaInicio, fechaFinal):
     """
     Retorna el resultado del requerimiento 7
     """
     # TODO: Modificar el requerimiento 7
-    pass
+    catalog = control['model']
+    start = get_time()
+    totalOfertas, totalCiudades, paisMax, ciudadMax, listaOfertas = model.req_7(catalog, numberOfOffersToShow, fechaInicio, fechaFinal)
+    end = get_time()
+    diff = delta_time(start, end)
+    return totalOfertas, totalCiudades, paisMax, ciudadMax, listaOfertas, diff
 
 
 def req_8(control):

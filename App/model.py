@@ -552,12 +552,310 @@ def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, en
     return lt.size(citiesList), lt.size(companiesList), lt.size(filteredList), promSalario, {maxCityOverall: maxOverall}, {minCityOverall: minOverall}, listaOfertas        
         
         
-def req_7(data_structs):
+def req_7(catalog, numberOfOffersToShow, fechaInicio, fechaFinal):
     """
     Función que soluciona el requerimiento 7
     """
     # TODO: Realizar el requerimiento 7
-    pass
+    jobsList = catalog['jobs']
+    skillsList = catalog['skills']
+    
+    countriesDict = {}
+    citiesDict = {}
+    citiesList = lt.newList('ARRAY_LIST')
+    filteredList = lt.newList('ARRAY_LIST')
+    for offer in lt.iterator(jobsList):
+        date = offer['published_at'].strftime("%Y-%m-%d")
+        if datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(fechaInicio, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(fechaFinal, '%Y-%m-%d'):
+            item = {'id': offer['id'],
+                    'experience_level': offer['experience_level'],
+                    'country_code': offer['country_code'],
+                    'skills': lt.newList('ARRAY_LIST'),
+                    'company_name': offer['company_name'],
+                    'acum_level': 0,
+                    'cont_level': 0,
+                    'city': offer['city']}
+            lt.addLast(filteredList, item)
+            
+            if lt.isPresent(citiesList, offer['city']) == 0:
+                lt.addLast(citiesList, offer['city'])
+                
+            if offer['country_code'] not in countriesDict:
+                countriesDict[offer['country_code']] = 1
+            else:
+                countriesDict[offer['country_code']] += 1
+                
+            if offer['city'] not in citiesDict:
+                citiesDict[offer['city']] = 1
+            else:
+                citiesDict[offer['city']] += 1
+                
+    maxCountry = ''
+    maxCo = 0
+    for country in countriesDict:
+        if countriesDict[country] > maxCo:
+            maxCountry = country
+            maxCo =countriesDict[country]
+            
+    maxCity = ''
+    maxC = 0
+    for city in citiesDict:
+        if citiesDict[city] > maxC:
+            maxCity = city
+            maxC =citiesDict[city]
+    
+    orderedByIdJobsList = sa.sort(filteredList, sortByIdCriteria)
+    
+    afterSkillsFilteredList = lt.newList('ARRAY_LIST')
+    idList = lt.newList('ARRAY_LIST')
+    for skill in lt.iterator(skillsList):
+        job_pos = binary_search(orderedByIdJobsList, 1, lt.size(orderedByIdJobsList), skill['id'])
+        if job_pos != -1:
+            job = lt.getElement(orderedByIdJobsList, job_pos)
+            lt.addLast(job['skills'], skill['name'])
+            job['acum_level'] += int(skill['level'])
+            job['cont_level'] += 1
+            id_pos = lt.isPresent(idList, job['id'])
+            if id_pos == 0:
+                lt.addLast(idList, job['id'])
+                lt.addLast(afterSkillsFilteredList, job)
+            else:
+                lt.changeInfo(afterSkillsFilteredList, id_pos, job)
+    
+    countriesList = lt.newList('ARRAY_LIST')
+    groupedByCountry = lt.newList('ARRAY_LIST')
+    for newOffer in lt.iterator(afterSkillsFilteredList):
+        pos_country = lt.isPresent(countriesList, newOffer['country_code'])
+        if pos_country == 0:
+            lt.addLast(countriesList, newOffer['country_code'])
+            newItem = {'country_code': newOffer['country_code'],
+                       'cant_offers': 0,
+                       'junior': {'skills_dict': {},
+                                  'acum_level': 0,
+                                  'cont_level': 0,
+                                  'companies_dict': {},
+                                  'companies_dictByCity': {}},
+                       'mid': {'skills_dict': {},
+                               'acum_level': 0,
+                               'cont_level': 0,
+                               'companies_dict': {},
+                               'companies_dictByCity': {}},
+                       'senior': {'skills_dict': {},
+                                  'acum_level': 0,
+                                  'cont_level': 0,
+                                  'companies_dict': {},
+                                  'companies_dictByCity': {}}}
+            newItem['country_code'] = newOffer['country_code']
+            newItem['cant_offers'] = 1
+            for skill in lt.iterator(newOffer['skills']):
+                if skill not in newItem[newOffer['experience_level']]['skills_dict']:
+                    newItem[newOffer['experience_level']]['skills_dict'][skill] = 1
+                else:
+                    newItem[newOffer['experience_level']]['skills_dict'][skill] += 1
+            newItem[newOffer['experience_level']]['acum_level'] += newOffer['acum_level']
+            newItem[newOffer['experience_level']]['cont_level'] += newOffer['cont_level']
+            newItem[newOffer['experience_level']]['companies_dict'][newOffer['company_name']] = 1 
+            newItem[newOffer['experience_level']]['companies_dictByCity'][newOffer['company_name']] = lt.newList('ARRAY_LIST')
+            lt.addLast(newItem[newOffer['experience_level']]['companies_dictByCity'][newOffer['company_name']], newOffer['city'])
+            lt.addLast(groupedByCountry, newItem)
+        else:
+            itemToUpdate = lt.getElement(groupedByCountry, pos_country)
+            itemToUpdate['cant_offers'] += 1
+            for skill in lt.iterator(newOffer['skills']):
+                if skill not in itemToUpdate[newOffer['experience_level']]['skills_dict']:
+                    itemToUpdate[newOffer['experience_level']]['skills_dict'][skill] = 1
+                else:
+                    itemToUpdate[newOffer['experience_level']]['skills_dict'][skill] += 1
+            itemToUpdate[newOffer['experience_level']]['acum_level'] += newOffer['acum_level']
+            itemToUpdate[newOffer['experience_level']]['cont_level'] += newOffer['cont_level']
+            if newOffer['company_name'] not in itemToUpdate[newOffer['experience_level']]['companies_dict']:
+                itemToUpdate[newOffer['experience_level']]['companies_dict'][newOffer['company_name']] = 1
+            else:
+                itemToUpdate[newOffer['experience_level']]['companies_dict'][newOffer['company_name']] += 1
+            dict = itemToUpdate[newOffer['experience_level']]['companies_dictByCity']
+            if newOffer['company_name'] not in dict:
+                itemToUpdate[newOffer['experience_level']]['companies_dictByCity'][newOffer['company_name']] = lt.newList('ARRAY_LIST')
+                lt.addLast(itemToUpdate[newOffer['experience_level']]['companies_dictByCity'][newOffer['company_name']], newOffer['city'])
+            else:
+                list = dict[newOffer['company_name']]
+                lt.addLast(list, newOffer['company_name'])
+            lt.changeInfo(groupedByCountry, pos_country, itemToUpdate)
+            
+    unorderedList = lt.newList("ARRAY_LIST")
+    for country in lt.iterator(groupedByCountry):
+        item = {'country_code': country['country_code'],
+                'cant_offers': country['cant_offers'],
+                'junior': lt.newList('ARRAY_LIST'),
+                'mid': lt.newList('ARRAY_LIST'),
+                'senior': lt.newList('ARRAY_LIST')}
+        
+        dictJunior = {'cont_skills': 0,
+                      'max_skill': '',
+                      'cont_maxSkill' : 0,
+                      'min_skill': '',
+                      'cont_minSkill': 0,
+                      'prom_level': 0,
+                      'cont_companies': 0,
+                      'max_company': '',
+                      'min_company': '',
+                      'cant_más_sedes': 0}
+        juniorSkillsDict = country['junior']['skills_dict']
+        dictJunior['cont_skills'] = len(juniorSkillsDict)
+        maxSJ = ''
+        maxcontSJ = 0
+        minSJ = ''
+        mincontSJ = 1000000
+        for skill in juniorSkillsDict:
+            if juniorSkillsDict[skill] > maxcontSJ:
+                maxSJ = skill
+                maxcontSJ = juniorSkillsDict[skill]
+            if juniorSkillsDict[skill] < mincontSJ:
+                minSJ = skill
+                mincontSJ = juniorSkillsDict[skill]
+        dictJunior['max_skill'] = maxSJ
+        dictJunior['cont_maxSkill'] = maxcontSJ
+        dictJunior['min_skill'] = minSJ 
+        dictJunior['cont_minSkill'] = mincontSJ if mincontSJ != 1000000 else 0
+        dictJunior['prom_level'] = round((country['junior']['acum_level'] / country['junior']['cont_level']), 2) if country['junior']['cont_level'] != 0 else 0
+        juniorCompaniesDict = country['junior']['companies_dict']
+        dictJunior['cont_companies'] = len(juniorCompaniesDict)
+        maxCJ = ''
+        maxcontCJ = 0
+        minCJ = ''
+        mincontCJ = 1000000
+        for company in juniorCompaniesDict:
+            if juniorCompaniesDict[company] > maxcontCJ:
+                maxCJ = company
+                maxcontCJ = juniorCompaniesDict[company]
+            if juniorCompaniesDict[company] < mincontCJ:
+                minCJ = company
+                mincontCJ = juniorCompaniesDict[company]
+        dictJunior['max_company'] = maxCJ
+        dictJunior['min_company'] = minCJ
+        dictByCityJunior = country['junior']['companies_dictByCity']
+        for company in dictByCityJunior:
+            if lt.size(dictByCityJunior[company]) > 1:
+                dictJunior['cant_más_sedes'] += 1
+        lt.addLast(item['junior'], dictJunior)
+        item['junior'] = tabulate(lt.iterator(item['junior']), tablefmt='grid', headers='keys', maxcolwidths=6)
+        
+        dictMid = {'cont_skills': 0,
+                   'max_skill': '',
+                   'cont_maxSkill' : 0,
+                   'min_skill': '',
+                   'cont_minSkill': 0,
+                   'prom_level': 0,
+                   'cont_companies': 0,
+                   'max_company': '',
+                   'min_company': '',
+                   'cant_más_sedes': 0}
+        midSkillsDict = country['mid']['skills_dict']
+        dictMid['cont_skills'] = len(midSkillsDict)
+        maxSM = ''
+        maxcontSM = 0
+        minSM = ''
+        mincontSM = 1000000
+        for skill in midSkillsDict:
+            if midSkillsDict[skill] > maxcontSM:
+                maxSM = skill
+                maxcontSM = midSkillsDict[skill]
+            if midSkillsDict[skill] < mincontSM:
+                minSM = skill
+                mincontSM = midSkillsDict[skill]
+        dictMid['max_skill'] = maxSM
+        dictMid['cont_maxSkill'] = maxcontSM
+        dictMid['min_skill'] = minSM
+        dictMid['cont_minSkill'] = mincontSM if mincontSM != 1000000 else 0
+        dictMid['prom_level'] = round((country['mid']['acum_level'] / country['mid']['cont_level']), 2) if country['mid']['cont_level'] != 0 else 0
+        MidCompaniesDict = country['mid']['companies_dict']
+        dictMid['cont_companies'] = len(MidCompaniesDict)
+        maxCM = ''
+        maxcontCM = 0
+        minCM = ''
+        mincontCM = 1000000
+        for company in MidCompaniesDict:
+            if MidCompaniesDict[company] > maxcontCM:
+                maxCM = company
+                maxcontCM = MidCompaniesDict[company]
+            if MidCompaniesDict[company] < mincontCM:
+                minCM = company
+                mincontCM = MidCompaniesDict[company]
+        dictMid['max_company'] = maxCM
+        dictMid['min_company'] = minCM
+        dictByCityMid = country['mid']['companies_dictByCity']
+        for company in dictByCityMid:
+            if lt.size(dictByCityMid[company]) > 1:
+                dictMid['cant_más_sedes'] += 1
+        lt.addLast(item['mid'], dictMid)
+        item['mid'] = tabulate(lt.iterator(item['mid']), tablefmt='grid', headers='keys', maxcolwidths=6)
+        
+        dictSenior = {'cont_skills': 0,
+                      'max_skill': '',
+                      'cont_maxSkill' : 0,
+                      'min_skill': '',
+                      'cont_minSkill': 0,
+                      'prom_level': 0,
+                      'cont_companies': 0,
+                      'max_company': '',
+                      'min_company': '',
+                      'cant_más_sedes': 0}
+        seniorSkillsDict = country['senior']['skills_dict']
+        dictSenior['cont_skills'] = len(seniorSkillsDict)
+        maxSS = ''
+        maxcontSS = 0
+        minSS = ''
+        mincontSS = 1000000
+        for skill in seniorSkillsDict:
+            if seniorSkillsDict[skill] > maxcontSS:
+                maxSS = skill
+                maxcontSS = seniorSkillsDict[skill]
+            if seniorSkillsDict[skill] < mincontSS:
+                minSS = skill
+                mincontSS = seniorSkillsDict[skill]
+        dictSenior['max_skill'] = maxSS
+        dictSenior['cont_maxSkill'] = maxcontSS
+        dictSenior['min_skill'] = minSS
+        dictSenior['cont_minSkill'] = mincontSS if mincontSS != 1000000 else 0
+        dictSenior['prom_level'] = round((country['senior']['acum_level'] / country['senior']['cont_level']), 2) if country['senior']['cont_level'] != 0 else 0
+        seniorCompaniesDict = country['senior']['companies_dict']
+        dictSenior['cont_companies'] = len(seniorCompaniesDict)
+        maxCS = ''
+        maxcontCS = 0
+        minCS = ''
+        mincontCS = 1000000
+        for company in seniorCompaniesDict:
+            if seniorCompaniesDict[company] > maxcontCS:
+                maxCS = company
+                maxcontCS = seniorCompaniesDict[company]
+            if seniorCompaniesDict[company] < mincontCS:
+                minCS = company
+                mincontCS = seniorCompaniesDict[company]
+        dictSenior['max_company'] = maxCS
+        dictSenior['min_company'] = minCS
+        dictByCitySenior = country['senior']['companies_dictByCity']
+        for company in dictByCitySenior:
+            if lt.size(dictByCitySenior[company]) > 1:
+                dictSenior['cant_más_sedes'] += 1
+        lt.addLast(item['senior'], dictSenior)
+        item['senior'] = tabulate(lt.iterator(item['senior']), tablefmt='grid', headers='keys', maxcolwidths=6)
+        
+        lt.addLast(unorderedList, item)
+        
+    orderedList = sa.sort(unorderedList, sortByCantOffers)
+    
+    if lt.size(orderedList) > numberOfOffersToShow:
+        offersList = lt.subList(orderedList, 1, numberOfOffersToShow)
+    else:
+        offersList = orderedList
+        
+    totalOfertas = lt.size(offersList)        
+    if totalOfertas > 6:
+        listaOfertas = getFirstAndLast3(offersList)
+    else:
+        listaOfertas = offersList
+        
+    return lt.size(filteredList), lt.size(citiesList), {maxCountry: maxCo}, {maxCity: maxC}, listaOfertas 
+            
 
 
 def req_8(data_structs):
@@ -600,6 +898,9 @@ def sortByDateCriteria(data1, data2):
 
 def sortByIdCriteria(data1, data2):
     return data1["id"] > data2["id"]
+
+def sortByCantOffers(data1, data2):
+    return data1["cant_offers"] > data2["cant_offers"]
 
 
 def sortByDateAndComapnyCriteria(data1, data2):

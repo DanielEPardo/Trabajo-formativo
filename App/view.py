@@ -244,8 +244,25 @@ def print_req_7():
     """
         Función que imprime la solución del Requerimiento 7 en consola
     """
+    numberOfOffersToShow = int(input("El número (N) de ciudades para consulta (ej.: 3, 5, 10 o 20): "))
+    fechaInicio = input ("La fecha inicial del periodo a consultar (con formato '%Y-%m-%d'): ")
+    fechaFinal = input("La fecha final del periodo a consultar (con formato '%Y-%m-%d'): ")
     
-    pass
+    print("\n======= Req No. 7 Inputs =========")
+    print("Número de países de consulta: " + str(numberOfOffersToShow))
+    print("Fecha inicial: " + fechaInicio)
+    print("Fecha final: " + fechaFinal)
+    
+    print("\n======= Req No. 7 Results =========")
+    totalOfertas, totalCiudades, paisMax, ciudadMax, listaOfertas, diff = controller.req_7(control, numberOfOffersToShow, fechaInicio, fechaFinal)
+    print("Tiempor de ejecución del requerimiento: " + str(diff) + " [ms]")
+    print("El total de ofertas de empleo: " + str(totalOfertas))
+    print("Total de ciudades que cumplen con las condiciones de la consulta: " + str(totalCiudades))
+    print("Nombre del país con mayor cantidad de ofertas y su conteo")
+    print(paisMax)
+    print("Nombre de la ciudad con mayor cantidad de ofertas y su conteo")
+    print(ciudadMax)
+    print(tabulate(lt.iterator(listaOfertas), tablefmt='grid', headers='keys'))
 
 
 def print_req_8(control):
