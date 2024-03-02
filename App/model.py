@@ -186,12 +186,12 @@ def jobsSize(data_structs):
 
 def req_1(catalog, numero, pais, nivel):
     """
-    Función que soluciona el requerimiento 1
+    Función que soluciona el requerimiento #1
     """
-    # TODO: Realizar el requerimiento 1
+    # TODO: Realizar el requerimiento #1
     jobsList = catalog['jobs']
     
-    # filtro por nivel de experticia y país -> O(n)
+    # filtro por nivel de experticia y país-> O(n)
     listaf = lt.newList("ARRAY_LIST")
     for offer in lt.iterator(jobsList):
         if offer['experience_level'] == nivel and offer['country_code'] == pais:
@@ -206,10 +206,10 @@ def req_1(catalog, numero, pais, nivel):
                     'open_to_hire_ukrainians': offer['open_to_hire_ukrainians']}
             lt.addLast(listaf, item)
     
-    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]  
     listao = sa.sort(listaf, sortByDateCriteria)
     
-    # Creación de la sublista a retornar O(1)
+    # Creación de la sublista a retornar-> O(1)
     totalOfertas = lt.size(listao)
     if totalOfertas < numero:
         listaOfertas = listao
@@ -223,15 +223,15 @@ def req_1(catalog, numero, pais, nivel):
 
 def req_2(catalog, nombre, fecha0, fechaf):
     """
-    Función que soluciona el requerimiento 2
+    Función que soluciona el requerimiento #2
     """
-    # TODO: Realizar el requerimiento 2
+    # TODO: Realizar el requerimiento #2
     jobsList = catalog['jobs']
     contjunior = 0
     contmid = 0
     contsenior = 0
     listaF = lt.newList("ARRAY_LIST")
-    # filtro por fechas y nombre de la empresa -> O(n)
+    # filtro por fechas y nombre de la empresa-> O(n)
     for offer in lt.iterator(jobsList):
         date = offer['published_at'].strftime("%Y-%m-%d")
         if offer['company_name'] == nombre and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(fecha0, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(fechaf, '%Y-%m-%d'):
@@ -249,12 +249,12 @@ def req_2(catalog, nombre, fecha0, fechaf):
             if offer['experience_level'] == "mid":
                 contmid += 1
             if offer['experience_level'] == "senior":
-                contsenior += 1
-    
-    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]        
+                contsenior += 1              
+                
+    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]    
     listaO = sa.sort(listaF, sortByDateAndCountryCriteria)
     
-    # Creación de la sublista a retornar O(1)
+    # Creación de la sublista a retornar -> O(1)
     totalOfertas = lt.size(listaO)        
     if totalOfertas > 6:
         listaOfertas = getFirstAndLast3(listaO)
@@ -361,58 +361,58 @@ def req_4(catalog, country, fechaInicio, fechaFinal):
     return totalOfertas, lt.size(companies_list), lt.size(cities_list), {maxCity: max}, {minCity: min}, listaOfertas
                 
 
-def req_5(catalog, city, fechaInicio, fechaFinal):
+def req_5(catalog, city, fechaInicio, fechaFinal): 
     """
-    Función que soluciona el requerimiento 5
+    Función que soluciona el requerimiento #5
     """
-    # TODO: Realizar el requerimiento 5
-    jobsList = catalog['jobs']
+    # TODO: Realizar el requerimiento #5
+    jobsList = catalog['jobs'] 
+
+    # Filtro por fechas y ciudad-> O(n)
+    companies_list = lt.newList("ARRAY_LIST") 
+    companies_dict = {} 
+    filteredList = lt.newList("ARRAY_LIST") 
+    for offer in lt.iterator(jobsList): 
+        date = offer['published_at'].strftime("%Y-%m-%d") 
+        if offer['city'] == city and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(fechaInicio, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(fechaFinal, '%Y-%m-%d'): 
+            item = {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), 
+                    'title': offer['title'], 
+                    'experience_level': offer['experience_level'], 
+                    'company_name': offer['company_name'], 
+                    'workplace_type': offer['workplace_type'], 
+                    'company_size': offer['company_size']} 
+            lt.addLast(filteredList, item) 
+            pos_company = lt.isPresent(companies_list, offer['company_name']) 
+            if  pos_company == 0: 
+                lt.addLast(companies_list, offer['company_name']) 
+                companies_dict[offer['company_name']] = 1 
+            else: 
+                companies_dict[offer['company_name']] += 1 
+
+    # Determinar la compañía con más ofertas-> O(n) 
+    maxCompany = "" 
+    max = 0 
+    minCompany = "" 
+    min = 10000000 
+    for company in companies_dict: 
+        if companies_dict[company] > max: 
+            maxCompany = company 
+            max = companies_dict[company] 
+        if companies_dict [company] < min: 
+            minCompany = company 
+            min = companies_dict[company] 
     
-    # Filtro por fechas y ciudad -> O(n)
-    companies_list = lt.newList("ARRAY_LIST")
-    companies_dict = {}
-    filteredList = lt.newList("ARRAY_LIST")
-    for offer in lt.iterator(jobsList):
-        date = offer['published_at'].strftime("%Y-%m-%d")
-        if offer['city'] == city and datetime.strptime(date, '%Y-%m-%d') >= datetime.strptime(fechaInicio, '%Y-%m-%d') and datetime.strptime(date, '%Y-%m-%d') <= datetime.strptime(fechaFinal, '%Y-%m-%d'):
-            item = {'published_at': offer['published_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    'title': offer['title'],
-                    'experience_level': offer['experience_level'],
-                    'company_name': offer['company_name'],
-                    'workplace_type': offer['workplace_type'],
-                    'company_size': offer['company_size']}
-            lt.addLast(filteredList, item)
-            pos_company = lt.isPresent(companies_list, offer['company_name'])
-            if  pos_company == 0:
-                lt.addLast(companies_list, offer['company_name'])
-                companies_dict[offer['company_name']] = 1
-            else:
-                companies_dict[offer['company_name']] += 1
-    
-    # Determinar la compañía con más ofertas -> O(n) 
-    maxCompany = ""
-    max = 0
-    minCompany = ""
-    min = 10000000
-    for company in companies_dict:
-        if companies_dict[company] > max:
-            maxCompany = company
-            max = companies_dict[company]
-        if companies_dict [company] < min:
-            minCompany = company
-            min = companies_dict[company]
-    
-    # shellsort -> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]          
-    orderedList = sa.sort(filteredList, sortByDateAndComapnyCriteria)
-    
-    # Creación de la sublista a retornar -> O(1) 
-    totalOfertas = lt.size(orderedList)        
-    if totalOfertas > 6:
-        listaOfertas = getFirstAndLast3(orderedList)
-    else:
-        listaOfertas = orderedList
-        
-    return totalOfertas, lt.size(companies_list), {maxCompany: max}, {minCompany: min}, listaOfertas
+    # shellsort-> [Peor caso O(n^(3/2)), Caso promdeio O(n^1.25), Mejor caso O(n log(n))]          
+    orderedList = sa.sort(filteredList, sortByDateAndComapnyCriteria) 
+
+    # Creación de la sublista a retornar-> O(1) 
+    totalOfertas = lt.size(orderedList)         
+    if totalOfertas > 6: 
+        listaOfertas = getFirstAndLast3(orderedList) 
+    else: 
+        listaOfertas = orderedList 
+
+    return totalOfertas, lt.size(companies_list), {maxCompany: max}, {minCompany: min}, listaOfertas 
 
 
 def req_6(catalog, numberOfOffersToShow, experienceLevel, country, startDate, endDate):
